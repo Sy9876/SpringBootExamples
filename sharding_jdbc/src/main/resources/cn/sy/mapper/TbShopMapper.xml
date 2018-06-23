@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.sy.mapper.TbShopMapper" >
+
+  <resultMap id="BaseResultMap" type="cn.sy.domain.TbShop" >
+    <id column="shop_code" property="shopCode" jdbcType="VARCHAR" />
+    <result column="branch_code" property="branchCode" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+  </resultMap>
+
+	<select id="findAll" resultMap="BaseResultMap">
+		SELECT shop_code, branch_code, name
+		FROM tb_shop
+		ORDER BY shop_code
+	</select>
+	
+	<select id="findByShopCode" resultMap="BaseResultMap">
+		SELECT shop_code, branch_code, name
+		FROM tb_shop
+		WHERE shop_code = #{shopCode,jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

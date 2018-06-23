@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.sy.mapper.TbShopShardingMapper" >
+
+  <resultMap id="BaseResultMap" type="cn.sy.domain.TbShopSharding" >
+    <id column="shop_code" property="shopCode" jdbcType="VARCHAR" />
+    <result column="table_index" property="tableIndex" jdbcType="INTEGER" />
+  </resultMap>
+  
+	<select id="findAll" resultMap="BaseResultMap">
+		SELECT shop_code, table_index
+		FROM tb_shop_sharding
+	</select>
+	
+	<select id="findByShop" resultType="int">
+		SELECT table_index
+		FROM tb_shop_sharding
+		WHERE id = #{shopCode,jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

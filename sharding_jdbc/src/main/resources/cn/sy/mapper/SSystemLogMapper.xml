@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.sy.mapper.SSystemLogMapper" >
+  <resultMap id="BaseResultMap" type="cn.sy.domain.SSystemLog" >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="ACCOUNT" property="account" jdbcType="VARCHAR" />
+    <result column="OPERATION" property="operation" jdbcType="VARCHAR" />
+    <result column="OPERATION_TIME" property="operationTime" jdbcType="TIMESTAMP" />
+    <result column="TOKEN" property="token" jdbcType="VARCHAR" />
+    <result column="IP_ADDRESS" property="ipAddress" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="cn.sy.domain.SSystemLog" extends="BaseResultMap" >
+    <result column="OPERATION_DETAIL" property="operationDetail" jdbcType="LONGVARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, ACCOUNT, OPERATION, OPERATION_TIME, TOKEN, IP_ADDRESS
+  </sql>
+  <sql id="Blob_Column_List" >
+    OPERATION_DETAIL
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from S_SYSTEM_LOG
+    where ID = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from S_SYSTEM_LOG
+    where ID = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.sy.domain.SSystemLog" useGeneratedKeys="true" keyProperty="id" >
+    insert into S_SYSTEM_LOG (ACCOUNT, OPERATION, OPERATION_TIME, 
+      TOKEN, IP_ADDRESS, OPERATION_DETAIL
+      )
+    values (#{account,jdbcType=VARCHAR}, #{operation,jdbcType=VARCHAR}, #{operationTime,jdbcType=TIMESTAMP}, 
+      #{token,jdbcType=VARCHAR}, #{ipAddress,jdbcType=VARCHAR}, #{operationDetail,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="cn.sy.domain.SSystemLog" useGeneratedKeys="true" keyProperty="id" >
+    insert into S_SYSTEM_LOG
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="account != null" >
+        ACCOUNT,
+      </if>
+      <if test="operation != null" >
+        OPERATION,
+      </if>
+      <if test="operationTime != null" >
+        OPERATION_TIME,
+      </if>
+      <if test="token != null" >
+        TOKEN,
+      </if>
+      <if test="ipAddress != null" >
+        IP_ADDRESS,
+      </if>
+      <if test="operationDetail != null" >
+        OPERATION_DETAIL,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="account != null" >
+        #{account,jdbcType=VARCHAR},
+      </if>
+      <if test="operation != null" >
+        #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="operationTime != null" >
+        #{operationTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="token != null" >
+        #{token,jdbcType=VARCHAR},
+      </if>
+      <if test="ipAddress != null" >
+        #{ipAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="operationDetail != null" >
+        #{operationDetail,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="cn.sy.domain.SSystemLog" >
+    update S_SYSTEM_LOG
+    <set >
+      <if test="account != null" >
+        ACCOUNT = #{account,jdbcType=VARCHAR},
+      </if>
+      <if test="operation != null" >
+        OPERATION = #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="operationTime != null" >
+        OPERATION_TIME = #{operationTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="token != null" >
+        TOKEN = #{token,jdbcType=VARCHAR},
+      </if>
+      <if test="ipAddress != null" >
+        IP_ADDRESS = #{ipAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="operationDetail != null" >
+        OPERATION_DETAIL = #{operationDetail,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="cn.sy.domain.SSystemLog" >
+    update S_SYSTEM_LOG
+    set ACCOUNT = #{account,jdbcType=VARCHAR},
+      OPERATION = #{operation,jdbcType=VARCHAR},
+      OPERATION_TIME = #{operationTime,jdbcType=TIMESTAMP},
+      TOKEN = #{token,jdbcType=VARCHAR},
+      IP_ADDRESS = #{ipAddress,jdbcType=VARCHAR},
+      OPERATION_DETAIL = #{operationDetail,jdbcType=LONGVARCHAR}
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="cn.sy.domain.SSystemLog" >
+    update S_SYSTEM_LOG
+    set ACCOUNT = #{account,jdbcType=VARCHAR},
+      OPERATION = #{operation,jdbcType=VARCHAR},
+      OPERATION_TIME = #{operationTime,jdbcType=TIMESTAMP},
+      TOKEN = #{token,jdbcType=VARCHAR},
+      IP_ADDRESS = #{ipAddress,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.sy.mapper.UserMapper" >
+
+	<select id="findAll" resultType="cn.sy.domain.User">
+		SELECT id, name
+		FROM t_user
+		ORDER BY id
+	</select>
+	
+	<select id="findByIds_bad1" resultType="cn.sy.domain.User">
+		SELECT id, name
+		FROM t_user
+		WHERE id = #{user_id1,jdbcType=INTEGER}
+		   and ( 1=1 or 1=2)
+	</select>
+	
+	<select id="findByIds_bad2" resultType="cn.sy.domain.User">
+		SELECT id, name
+		FROM t_user
+		WHERE id = #{user_id1,jdbcType=INTEGER}
+		   OR id = #{user_id2,jdbcType=INTEGER}
+	</select>
+	
+	<select id="findByIds_bad3" resultType="cn.sy.domain.User">
+		SELECT id, name
+		FROM t_user
+		WHERE id = #{user_id1,jdbcType=INTEGER}
+		union all
+		SELECT id, name
+		FROM t_user
+		WHERE id = #{user_id2,jdbcType=INTEGER}
+	</select>
+	
+	<select id="findByIds" resultType="cn.sy.domain.User">
+		SELECT id, name
+		FROM t_user
+		WHERE id in ( #{user_id1,jdbcType=INTEGER}, #{user_id2,jdbcType=INTEGER} )
+	</select>
+	
+	<select id="findById" resultType="cn.sy.domain.User">
+		SELECT id, name
+		FROM t_user
+		WHERE id = #{user_id,jdbcType=INTEGER}
+	</select>
+	
+</mapper>

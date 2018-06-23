@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.sy.mapper.OrderMapper" >
+  
+  <insert id="insertOrder" parameterType="cn.sy.domain.Order" >
+    insert into t_order (order_id, user_id, user_name)
+    values (#{order_id,jdbcType=INTEGER}, #{user_id,jdbcType=INTEGER},#{user_name,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertOrderItem" parameterType="cn.sy.domain.OrderItem" useGeneratedKeys="true" keyProperty="item_id" >
+    insert into t_order_item (order_id, user_id, item_name)
+    values (#{order_id,jdbcType=INTEGER}, #{user_id,jdbcType=INTEGER},#{item_name,jdbcType=VARCHAR})
+  </insert>
+
+  
+  <insert id="insertShopOrder" parameterType="cn.sy.domain.ShopOrder" >
+    insert into t_shop_order (order_id, shop_id, shop_name)
+    values (#{order_id,jdbcType=INTEGER}, #{shop_id,jdbcType=INTEGER},#{shop_name,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertShopOrderItem" parameterType="cn.sy.domain.ShopOrderItem" useGeneratedKeys="true" keyProperty="item_id" >
+    insert into t_shop_order_item (order_id, shop_id, item_name)
+    values (#{order_id,jdbcType=INTEGER}, #{shop_id,jdbcType=INTEGER},#{item_name,jdbcType=VARCHAR})
+  </insert>
+
+
+
+	<select id="findAll" resultType="cn.sy.domain.Order">
+		SELECT order_id, user_id, user_name
+		FROM t_order
+		ORDER BY order_id
+	</select>
+	
+	<select id="findById" resultType="cn.sy.domain.Order">
+		SELECT order_id, user_id, user_name
+		FROM t_order
+		WHERE order_id = #{order_id,jdbcType=INTEGER}
+	</select>
+	
+	<select id="findByUser" resultType="cn.sy.domain.Order">
+		SELECT order_id, user_id, user_name
+		FROM t_order
+		WHERE user_id = #{user_id,jdbcType=INTEGER}
+		ORDER BY order_id
+	</select>
+	
+	<select id="findByShop" resultType="cn.sy.domain.ShopOrder">
+		SELECT order_id, shop_id, shop_name
+		FROM t_shop_order
+		WHERE shop_id = #{shop_id,jdbcType=INTEGER}
+		ORDER BY order_id
+	</select>
+	
+	<select id="findByShops" resultType="cn.sy.domain.ShopOrder">
+		SELECT order_id, shop_id, shop_name
+		FROM t_shop_order
+		WHERE shop_id in
+		<foreach item="shop_id" index="index" collection="shopList"
+		 open="(" separator="," close=")">
+		 #{shop_id,jdbcType=INTEGER}
+		 </foreach>
+		ORDER BY order_id
+	</select>
+	
+	<select id="findOrderWithItem" resultType="cn.sy.domain.OrderWithItem">
+		SELECT o.order_id, o.user_id, o.user_name, oi.item_id, oi.item_name
+		FROM t_order o
+		JOIN t_order_item oi on o.order_id=oi.order_id
+		ORDER BY o.order_id DESC
+		LIMIT 1000
+	</select>  <!--  and o.user_id=oi.user_id  -->
+	
+	<select id="findOrderWithPrice" resultType="cn.sy.domain.OrderWithItemAndPrice">
+		SELECT o.order_id, o.user_id, o.user_name, oi.item_id, oi.item_name, p.price
+		FROM t_order o
+		JOIN t_order_item oi on o.order_id=oi.order_id
+		LEFT JOIN t_product p on oi.item_name=p.name
+		ORDER BY o.order_id DESC
+		LIMIT 1000
+	</select>  <!--  and o.user_id=oi.user_id  -->
+	
+</mapper>

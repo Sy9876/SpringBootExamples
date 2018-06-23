@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.sy.mapper.TbUserOrderMapper" >
+  
+  
+  <resultMap id="BaseResultMap" type="cn.sy.domain.TbUserOrder" >
+    <id column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="product_id" property="productId" jdbcType="VARCHAR" />
+    <result column="product_name" property="productName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <insert id="insertOrder" parameterType="cn.sy.domain.TbUserOrder" >
+    insert into tb_user_order (order_id, user_id, product_id, product_name)
+    values (#{orderId,jdbcType=VARCHAR},
+     #{userId,jdbcType=VARCHAR},
+     #{productId,jdbcType=VARCHAR},
+     #{productName,jdbcType=VARCHAR}
+     )
+  </insert>
+
+	<select id="findAll" resultType="cn.sy.domain.TbUserOrder">
+		SELECT order_id, user_id, product_id, product_name
+		FROM tb_user_order
+		ORDER BY order_id
+	</select>
+	
+	<select id="findById" resultType="cn.sy.domain.TbUserOrder">
+		SELECT order_id, user_id, product_id, product_name
+		FROM tb_user_order
+		WHERE order_id = #{orderId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findByUser" resultType="cn.sy.domain.TbUserOrder">
+		SELECT order_id, user_id, product_id, product_name
+		FROM tb_user_order
+		WHERE user_id = #{userId,jdbcType=VARCHAR}
+		ORDER BY order_id
+	</select>
+	
+</mapper>
