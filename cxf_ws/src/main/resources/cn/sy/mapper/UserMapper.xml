@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sy.mapper.UserMapper">
+
+	<!-- 查询 -->
+	<select id="findByName" resultType="User" parameterType="String">
+		SELECT id, name, status, password 
+		FROM user 
+		WHERE name = #{name}
+	</select>
+
+	<select id="count" resultType="Integer" parameterType="String">
+		SELECT count(1) 
+		FROM user 
+	</select>
+
+	<insert id="insert" parameterType="User">
+		insert into user (id, name, status, password) 
+		values (#{id}, #{name}, #{status}, #{password})
+	</insert>
+
+</mapper>
