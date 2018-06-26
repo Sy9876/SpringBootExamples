@@ -18,9 +18,9 @@ public class MyController {
 
 	/*
 	 * request:
-	 *     curl -i "http://localhost:8080/hello?name=sy"
+	 *     curl -i "http://localhost:8080/ds/1"
+	 *     curl -i "http://localhost:8080/ds/2"
 	 * response:
-	 *     hello sy
 	 */
     @ResponseBody
     @RequestMapping("/ds/{ds}")
