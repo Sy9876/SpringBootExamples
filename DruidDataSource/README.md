@@ -43,4 +43,13 @@ public class Config {
 
 ```
 
+使用sharding-jdbc时，自动配置 io.shardingjdbc.spring.boot.SpringBootConfiguration会
+根据配置构造DataSource（beanName为dataSource，type为ShardingDataSource）
+
+为了简便起见，保持sharding-jdbc自动配置的DataSource的beanName为dataSource。（怎么改beanName？）
+
+把使用 @Configuration 和 @Bean 配置的其它 DataSource，命名为别的。
+
+
+
 

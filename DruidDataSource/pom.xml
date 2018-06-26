@@ -34,6 +34,19 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
+		
+		
+		<dependency>
+		    <groupId>io.shardingjdbc</groupId>
+		    <artifactId>sharding-jdbc-core</artifactId>
+		</dependency>
+			
+		<dependency>
+		    <groupId>io.shardingjdbc</groupId>
+		    <artifactId>sharding-jdbc-core-spring-boot-starter</artifactId>
+		</dependency>
+
+
 	</dependencies>
   
   	<dependencyManagement>
@@ -55,6 +68,20 @@
 				<artifactId>mysql-connector-java</artifactId>
 				<version>8.0.11</version><!-- 5.1.35 8.0.11 -->
 			</dependency>
+
+
+			<dependency>
+			    <groupId>io.shardingjdbc</groupId>
+			    <artifactId>sharding-jdbc-core</artifactId>
+			    <version>2.0.3</version>
+			</dependency>
+
+			<dependency>
+			    <groupId>io.shardingjdbc</groupId>
+			    <artifactId>sharding-jdbc-core-spring-boot-starter</artifactId>
+			    <version>2.0.3</version>
+			</dependency>
+
 
 		</dependencies>
 	</dependencyManagement>
