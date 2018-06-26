@@ -132,5 +132,12 @@ public class TbController {
 	}
     
     
-    
+    @ResponseBody
+    @RequestMapping("/findByShopOrBranch")
+    public List<TbShop> findByShopOrBranch(String shopCode, String branchCode) {
+		List<TbShop> result = tbService.findByShopOrBranch(shopCode, branchCode);
+		
+		return result;
+		
+	}
 }

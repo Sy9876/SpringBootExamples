@@ -1,4 +1,4 @@
-package cn.sy.mapper;
+package cn.sy.ds2Mapper;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +10,7 @@ import cn.sy.domain.Shop;
 import cn.sy.domain.TbShop;
 
 @Mapper
-public interface TbShopMapper {
+public interface TbDs2ShopMapper {
 
     List<TbShop> findAll();
     

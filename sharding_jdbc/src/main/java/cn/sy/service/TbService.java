@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cn.sy.domain.Shop;
 import cn.sy.domain.TbProduct;
 import cn.sy.domain.TbShop;
 import cn.sy.domain.TbShopOrder;
 import cn.sy.domain.TbUser;
 import cn.sy.domain.TbUserOrder;
+import cn.sy.ds2Mapper.TbDs2ShopMapper;
 import cn.sy.mapper.TbProductMapper;
 import cn.sy.mapper.TbShopMapper;
 import cn.sy.mapper.TbShopOrderMapper;
@@ -34,6 +36,9 @@ public class TbService {
 
 	@Autowired
 	private TbShopMapper tbShopMapper;
+
+	@Autowired
+	private TbDs2ShopMapper tbDs2ShopMapper;
 
 	@Autowired
 	private TbProductMapper tbProductMapper;
@@ -93,7 +98,7 @@ public class TbService {
 	 * @param item
 	 * @param shop
 	 */
-	@Transactional
+	@Transactional(transactionManager="dataSourceTransactionManager")
     public void createOrder(String userId, String itemId, String shopCode) {
 
     	String orderId = null;
@@ -229,6 +234,13 @@ public class TbService {
 		
 	}
     
+	public List<TbShop> findByShopOrBranch(String shopCode, String branchCode) {
+		List<TbShop> result = tbDs2ShopMapper.findByShopOrBranch(shopCode, branchCode);
+		
+		return result;
+		
+	}
+	
 	public List<TbProduct> findAllProduct() {
 		List<TbProduct> result = tbProductMapper.findAll();
 		

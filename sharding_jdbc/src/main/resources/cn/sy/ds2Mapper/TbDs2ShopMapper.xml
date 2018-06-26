@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="cn.sy.mapper.TbShopMapper" >
+<mapper namespace="cn.sy.ds2Mapper.TbDs2ShopMapper" >
 
   <resultMap id="BaseResultMap" type="cn.sy.domain.TbShop" >
     <id column="shop_code" property="shopCode" jdbcType="VARCHAR" />
