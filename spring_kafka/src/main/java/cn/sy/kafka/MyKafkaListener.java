@@ -1,8 +1,12 @@
 package cn.sy.kafka;
 
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -17,14 +22,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import cn.sy.dto.Demo2KafkaDto;
 import cn.sy.dto.DemoKafkaDto;
+import cn.sy.jmx.MyOffsetMBean;
+
 import org.springframework.kafka.support.KafkaHeaders;
 @Component
 @KafkaListener(topics = "myTopic", groupId="g1"
 ,containerFactory = "kafkaJsonListenerContainerFactory"
 )
-public class MyKafkaListener {
+public class MyKafkaListener implements ConsumerSeekAware {
 	private static Logger logger = LoggerFactory.getLogger(KafkaListener.class);
 
+	private ConsumerSeekCallback consumerSeekCallback;
 	
 //	@Autowired
 //	private KafkaTemplate<String, String> kafkaTemplate;
@@ -154,6 +162,57 @@ public class MyKafkaListener {
 //		logger.info("listen2 myTopic receive: " + cr.toString());
 //
 //	}
+
+	
+
+	@Override
+	public void registerSeekCallback(ConsumerSeekCallback callback) {
+		logger.info("on registerSeekCallback. " + callback);
+		
+		// save callback
+		consumerSeekCallback=callback;
+		
+	}
+
+	@Override
+	public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+		logger.info("on onPartitionsAssigned. " + assignments);
+
+		String topic = "myTopic";
+		int partition = 0;
+		long offset = 0;
+		
+		TopicPartition tp = new TopicPartition(topic, partition);
+		offset = assignments.get(tp);
+		if(offset-1>0) {
+			logger.info("on onPartitionsAssigned. seek to " + topic + " " + partition + " " + (offset - 1));
+			callback.seek(topic, partition, offset - 1);
+		}
+		
+	}
+
+	@Override
+	public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+		logger.info("on onIdleContainer. " + assignments);
+
+		
+	}
     
-    
+	
+	@PostConstruct
+	public void registerToJmxBean() {
+		logger.info("registerToJmxBean. ");
+		MyOffsetMBean.registerListener(this);
+	}
+	
+	public void doJmxOperationSeedTo(long seekTo) {
+		logger.info("doJmxOperationSeedTo. seekTo=" + seekTo);
+		String topic = "myTopic";
+		int partition = 0;
+		long offset = seekTo;
+		logger.info("on doJmxOperationSeedTo. seek to " + topic + " " + partition + " " + offset);
+		consumerSeekCallback.seek(topic, partition, offset);
+	}
+	
+	
 }
