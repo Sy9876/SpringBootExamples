@@ -39,21 +39,16 @@
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
-	    <!--
-        <dependency>
+	    <dependency>
 	        <groupId>org.springframework.session</groupId>
 	        <artifactId>spring-session-core</artifactId>
 	    </dependency>
-    	<dependency>
+    	<!--
+        <dependency>
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session-jdbc</artifactId>
 		</dependency>
-
-
-		 <dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-jta-atomikos</artifactId>
-		</dependency> -->
+		-->
 
 	</dependencies>
 	
@@ -70,8 +65,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>

@@ -1,55 +1,103 @@
 package cn.sy;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DirContextOperations;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import cn.sy.dao.UserDao;
-import cn.sy.domain.MyUserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.util.StringUtils;
 
 @Configuration
 @EnableWebSecurity
-@PropertySource("security.properties")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private static Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 	
-	@Autowired
-	private UserDao userDetailsService;
 	
-	@Value("${secure.key}")
-	private String secureKey;
-	
-	@Value("${secure.ad.domain}")
-	private String secureAdDomain;
-	
-	@Value("${secure.ad.url}")
-	private String secureAdUrl;
+	// UserDetailsService 可以由springboot自动注入。
+	// 是InMemoryUserDetailsManager实例，从application.properties中加载账号.
+	// 但是这样就只能用servlet.login进行登录，不能使用AuthenticationManager.authenticate。
+	// 因为
+	//  UserDetailsServiceAutoConfiguration
+	//  @ConditionalOnMissingBean({ AuthenticationManager.class, AuthenticationProvider.class, UserDetailsService.class })
 	
 	
+//	@Bean
+//	public UserDetailsService userDetailsService() {
+//		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+//		UserDetails userDetails = User.withDefaultPasswordEncoder()
+//				.username("admin")
+//				.password("admin123")
+//				.roles("USER", "ADMIN")
+//				.build();
+//		
+//		manager.createUser(userDetails);
+//		return manager;
+//	}
+	
+	
+	// -- copy from UserDetailsServiceAutoConfiguration ------------
+	/**
+	 * 从UserDetailsServiceAutoConfiguration复制代码，以读取配置文件中的账号
+	 * 
+	 * @param properties
+	 * @param passwordEncoder
+	 * @return
+	 */
+	@Bean
+	public UserDetailsService userDetailsService(SecurityProperties properties,
+			ObjectProvider<PasswordEncoder> passwordEncoder) {
+		SecurityProperties.User user = properties.getUser();
+		List<String> roles = user.getRoles();
+		return new InMemoryUserDetailsManager(User.withUsername(user.getName())
+				.password(getOrDeducePassword(user, passwordEncoder.getIfAvailable()))
+				.roles(StringUtils.toStringArray(roles)).build());
+	}
+	
+	private static final String NOOP_PASSWORD_PREFIX = "{noop}";
+	private static final Pattern PASSWORD_ALGORITHM_PATTERN = Pattern
+			.compile("^\\{.+}.*$");
+	
+	private String getOrDeducePassword(SecurityProperties.User user,
+			PasswordEncoder encoder) {
+		String password = user.getPassword();
+		if (user.isPasswordGenerated()) {
+			logger.info(String.format("%n%nUsing generated security password: %s%n",
+					user.getPassword()));
+		}
+		if (encoder != null || PASSWORD_ALGORITHM_PATTERN.matcher(password).matches()) {
+			return password;
+		}
+		return NOOP_PASSWORD_PREFIX + password;
+	}
+	// -- copy from UserDetailsServiceAutoConfiguration ------------
+	
+	
+	/**
+	 * 为了构造AuthenticationManager
+	 * @param userDetailsService
+	 * @return
+	 */
 	@Bean
 	public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService) {
 		logger.info("daoAuthenticationProvider");
@@ -58,98 +106,47 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return provider;
 	}
 	
+	/**
+	 * 构造AuthenticationManager。
+	 * ProviderManager是AuthenticationManager的实现类
+	 * @param daoAuthenticationProvider
+	 * @return
+	 */
 	@Bean
-	public ActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider() {
-		logger.info("activeDirectoryLdapAuthenticationProvider");
-		
-
-		ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(secureAdDomain, secureAdUrl);
-
-		provider.setUserDetailsContextMapper(new UserDetailsContextMapper() {
-
-			/**
-			 * 
-			 */
-			@Override
-			public UserDetails mapUserFromContext(DirContextOperations ctx, String username,
-					Collection<? extends GrantedAuthority> authorities) {
-				MyUserDetails userDetails = null;
-//				userDetails = new MyUserDetails();
-//				userDetails.setName(username);
-				try {
-					userDetails = (MyUserDetails) userDetailsService.loadUserByUsername(username);
-					userDetails.setMenus(userDetailsService.findMenusByName(username));
-				} catch (Exception e) {
-					throw e;
-				}
-				return userDetails;
-			}
-
-			/**
-			 * we do not use this.
-			 */
-			@Override
-			public void mapUserToContext(UserDetails user, DirContextAdapter ctx) {
-			}
-			
-		});
-		return provider;
-	}
-	
-	@Bean
-	public ProviderManager providerManager(DaoAuthenticationProvider daoAuthenticationProvider
-			,ActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider
-			) {
+	public ProviderManager providerManager(DaoAuthenticationProvider daoAuthenticationProvider) {
 		logger.info("providerManager");
 		List<AuthenticationProvider> providers = new ArrayList<AuthenticationProvider>();
 		providers.add(daoAuthenticationProvider);
-		providers.add(activeDirectoryLdapAuthenticationProvider);
 		return new ProviderManager(providers);
 	}
 	
-	/*
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		logger.info("secureKey=" + secureKey);
-//		auth
-//		.jdbcAuthentication()
-//			.dataSource(dataSource)
-//			.withDefaultSchema()
-//			.withUser(User.withDefaultPasswordEncoder().username("user").password("password").roles("USER"));
-//		auth
-//		.userDetailsService(userDetailsService);
-	
-			
-	}
-	*/
-	
+
+	/**
+	 * 禁用csrf
+	 * 
+	 * 启用session
+	 * 
+	 */
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
 		// disable csrf for restapi ?
         http
         	.csrf()
 //        	.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-        	.disable()	
+//        	.csrfTokenRepository(new HttpSessionCsrfTokenRepository())
+        	
+        	.disable()
 //        	.and()
 
+        	// 或通过配置 security.sessions=always ?
+        	.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+        	.and()
+        	
         	.authorizeRequests()
-	        .antMatchers("/void.do", "/login.do").permitAll()
-//	        .antMatchers("/count.do").authenticated()
-//	        .antMatchers("/user.do").hasRole("USER")
-//	        .antMatchers("/insert.do").hasRole("ADMIN")
-//	        .antMatchers("/menus.do").hasRole("ADMIN")
-	        
-	        // hasRole match to ROLE_ + str
-	        .antMatchers("/count.do").hasRole("count")
-	        .antMatchers("/user.do").hasRole("user")
-	        .antMatchers("/insert.do").hasRole("insert")
-	        .antMatchers("/menus.do").hasRole("menus")
-	        
+	        .antMatchers("/void.do", "/login.do", "/actuator/**").permitAll()
+
 //	        .antMatchers("/**").permitAll()
 	        .anyRequest().authenticated()
-//                .and().formLogin().loginPage("/login").failureUrl("/login?error").permitAll().and()
-//                .logout()
-//                .permitAll()
                 ;
     }
 	

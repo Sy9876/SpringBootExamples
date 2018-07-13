@@ -1,29 +1,37 @@
 package cn.sy;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.ibatis.mapping.DatabaseIdProvider;
-import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.session.MapSessionRepository;
+import org.springframework.session.Session;
+import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
+import org.springframework.session.web.http.HeaderHttpSessionIdResolver;
+import org.springframework.session.web.http.HttpSessionIdResolver;
 
+/**
+ * 需要@EnableSpringHttpSession来启用session，并需要声明一个sessionRepository（@Bean MapSessionRepository）
+ * 
+ * 用HttpSessionIdResolver来禁用cookie，启用x-auth-token头。
+ * 
+ * 
+ * @author Administrator
+ *
+ */
 @Configuration
-@EnableTransactionManagement
+@EnableSpringHttpSession
 public class Config {
-
-	/**
-	 * config DatabaseIdProvider in mybatis-config.xml do not work in spring mybatis.
-	 * @return
-	 */
 	@Bean
-	public DatabaseIdProvider getDatabaseIdProvider() {
-		DatabaseIdProvider databaseIdProvider = new VendorDatabaseIdProvider();
-		Properties p = new Properties();
-		p.setProperty("Oracle", "oracle");
-		p.setProperty("SQL Server", "sqlserver");
-		p.setProperty("MySQL", "mysql");
-		databaseIdProvider.setProperties(p);
-		return databaseIdProvider;
+	public HttpSessionIdResolver httpSessionIdResolver() {
+		return HeaderHttpSessionIdResolver.xAuthToken(); 
+	}
+
+	@Bean
+	public MapSessionRepository sessionRepository() {
+		Map<String, Session> sessions = new HashMap<String, Session>();
+		MapSessionRepository sessionRepository = new MapSessionRepository(sessions);
+		return sessionRepository;
 	}
 }
