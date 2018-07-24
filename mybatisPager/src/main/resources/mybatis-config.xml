@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+<!-- mybatis dtd 对元素顺序要求严格，顺序错误的话启动会报错 -->
+	<properties>
+		<property name="dialect" value="mysql"/>
+	</properties>
+	
+	<settings>
+		<!-- changes from the defaults -->
+		<setting name="lazyLoadingEnabled" value="false" />
+		<setting name="cacheEnabled" value="false" />
+		<setting name="callSettersOnNulls" value="true" />
+	</settings>
+	
+	<typeAliases>
+
+  	</typeAliases>	
+  	
+  	
+  	<plugins>
+  		<!-- 自己实现的插件类 
+  		<plugin interceptor="cn.sy.interceptor.MyPageInterceptor">
+  			<property name="dialect" value="mysql"/>
+  		</plugin>
+  		 -->
+  		
+  		<!-- com.github.pagehelper分页插件。 
+  		     https://github.com/pagehelper/Mybatis-PageHelper/blob/master/wikis/zh/HowToUse.md
+  		-->
+	    <plugin interceptor="com.github.pagehelper.PageInterceptor">
+			<!-- <property name="dialect" value="sqlserver2012"/> -->
+			<property name="dialect" value=""/>
+			<property name="rowBoundsWithCount" value="true"/>
+			<!-- <property name="supportMethodsArguments" value="true"/> -->
+
+		</plugin>
+	
+  	</plugins>
+
+  	<mappers>      
+
+	</mappers>
+</configuration>
