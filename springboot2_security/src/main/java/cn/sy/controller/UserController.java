@@ -1,7 +1,6 @@
 package cn.sy.controller;
 
-import java.util.List;
-import java.util.Map;
+import java.security.Key;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,14 +17,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import cn.sy.domain.MyUserDetails;
-import cn.sy.domain.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 
 @RestController
@@ -34,37 +34,43 @@ public class UserController {
 	private static Logger logger = LoggerFactory.getLogger(UserController.class);
 
 
-	@Autowired
-	AuthenticationManager auth;
+//	@Autowired
+//	AuthenticationManager authenticationManager;
+	private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 	
     @RequestMapping("/login.do")
-    public UserDetails login(
+    public String login(
 			@RequestParam(value="name", required=true) String name,
-			@RequestParam(value="password", required=true) String password) throws Exception {
+			@RequestParam(value="password", required=true) String password,
+			HttpServletRequest request
+			) throws Exception {
     	
     	UserDetails principal = null;
-
+    	String jws = null;
+		
     	logger.info("login.do start. name=" + name + " password=" + password);
     	try {
 
     		String[] authMethods = {"AuthenticationManager", "Servlet"};
-    		String authMethod = authMethods[0];
-    		
+    		String authMethod = authMethods[1];
     		logger.info("login.do use " + authMethod);
     		
     		try {
-    			if(authMethod.equals("AuthenticationManager")) {
-    	    		Authentication request = new UsernamePasswordAuthenticationToken(name, password);
-    	    		logger.info("login.do", request);
-    	    		Authentication result = auth.authenticate(request);
-    	    		logger.info("login.do", result);
-    	    		SecurityContextHolder.getContext().setAuthentication(result);
-    			}
+//    			if(authMethod.equals("AuthenticationManager")) {
+//    	    		Authentication request = new UsernamePasswordAuthenticationToken(name, password);
+//    	    		logger.info("login.do", request);
+//    	    		Authentication result = authenticationManager.authenticate(request);
+//    	    		logger.info("login.do", result);
+//    	    		SecurityContextHolder.getContext().setAuthentication(result);
+//    			}
 
     			if(authMethod.equals("Servlet")) {
-	    			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
-	    					.getRequestAttributes()).getRequest();
+//	    			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
+//	    					.getRequestAttributes()).getRequest();
 	    			request.login(name, password);
+	    			
+	    			jws = Jwts.builder().setSubject(name).signWith(key).compact();
+	    			logger.info("login.do  request.login done  jws：" + jws);
     			}
     			
     			logger.info("login.do  request.login done");
@@ -82,7 +88,7 @@ public class UserController {
 			throw e;
 		}
     	logger.info("login.do end. principal: " + principal);
-    	return principal;
+    	return jws;
     }
     
     @RequestMapping("/logout.do")
@@ -94,14 +100,29 @@ public class UserController {
     	return "OK";
     }
 
+    // curl -i -X POST -H 'Content-type: application/json' -d '{"name":"sy", "password":"shenyue"}' 'http://localhost:8080/login.do?name=admin&password=admin123'
+    // 
+    // jws=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.BG3EClUo-ZpGUBPzEuXd_RuTffGzLnBVOos28ZiZYv4
+    // curl -i -X POST -H 'Content-type: application/json' -H "X-Auth-Token: $XAT" 'http://localhost:8080/whoami.do?jws='$jws
     @RequestMapping("/whoami.do")
-    public UserDetails whoami() throws Exception {
+    public String whoami(String jws) throws Exception {
     	
-    	UserDetails principal = getPrincipal();
+//    	UserDetails principal = getPrincipal();
+    	String user = null;
     	
-    	logger.info("whoami.do end. principal: " + principal);
+//    	String jws = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.qpiLzBZolx7HSvMqHwaKUIs-w8xvIMM94gG5xB-DFHY";
     	
-    	return principal;
+    	try {
+    		Jws<Claims> jwsClaims = Jwts.parser().setSigningKey(key).parseClaimsJws(jws);
+    		user = jwsClaims.getBody().getSubject();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	
+//    	logger.info("whoami.do end. principal: " + principal);
+    	logger.info("whoami.do end. user: " + user);
+    	
+    	return user;
     }
     
     @RequestMapping("/void.do")

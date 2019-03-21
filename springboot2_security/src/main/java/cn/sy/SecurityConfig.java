@@ -41,83 +41,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	//  UserDetailsServiceAutoConfiguration
 	//  @ConditionalOnMissingBean({ AuthenticationManager.class, AuthenticationProvider.class, UserDetailsService.class })
 	
-	
 //	@Bean
-//	public UserDetailsService userDetailsService() {
-//		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-//		UserDetails userDetails = User.withDefaultPasswordEncoder()
-//				.username("admin")
-//				.password("admin123")
-//				.roles("USER", "ADMIN")
-//				.build();
-//		
-//		manager.createUser(userDetails);
-//		return manager;
+//	public AuthenticationProvider authenticationProvider() {
+//		AuthenticationProvider provider = new AuthenticationProvider();
 //	}
 	
-	
-	// -- copy from UserDetailsServiceAutoConfiguration ------------
-	/**
-	 * 从UserDetailsServiceAutoConfiguration复制代码，以读取配置文件中的账号
-	 * 
-	 * @param properties
-	 * @param passwordEncoder
-	 * @return
-	 */
 	@Bean
-	public UserDetailsService userDetailsService(SecurityProperties properties,
-			ObjectProvider<PasswordEncoder> passwordEncoder) {
-		SecurityProperties.User user = properties.getUser();
-		List<String> roles = user.getRoles();
-		return new InMemoryUserDetailsManager(User.withUsername(user.getName())
-				.password(getOrDeducePassword(user, passwordEncoder.getIfAvailable()))
-				.roles(StringUtils.toStringArray(roles)).build());
-	}
-	
-	private static final String NOOP_PASSWORD_PREFIX = "{noop}";
-	private static final Pattern PASSWORD_ALGORITHM_PATTERN = Pattern
-			.compile("^\\{.+}.*$");
-	
-	private String getOrDeducePassword(SecurityProperties.User user,
-			PasswordEncoder encoder) {
-		String password = user.getPassword();
-		if (user.isPasswordGenerated()) {
-			logger.info(String.format("%n%nUsing generated security password: %s%n",
-					user.getPassword()));
-		}
-		if (encoder != null || PASSWORD_ALGORITHM_PATTERN.matcher(password).matches()) {
-			return password;
-		}
-		return NOOP_PASSWORD_PREFIX + password;
-	}
-	// -- copy from UserDetailsServiceAutoConfiguration ------------
-	
-	
-	/**
-	 * 为了构造AuthenticationManager
-	 * @param userDetailsService
-	 * @return
-	 */
-	@Bean
-	public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService) {
-		logger.info("daoAuthenticationProvider");
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
-		return provider;
-	}
-	
-	/**
-	 * 构造AuthenticationManager。
-	 * ProviderManager是AuthenticationManager的实现类
-	 * @param daoAuthenticationProvider
-	 * @return
-	 */
-	@Bean
-	public ProviderManager providerManager(DaoAuthenticationProvider daoAuthenticationProvider) {
-		logger.info("providerManager");
-		List<AuthenticationProvider> providers = new ArrayList<AuthenticationProvider>();
-		providers.add(daoAuthenticationProvider);
-		return new ProviderManager(providers);
+	public UserDetailsService userDetailsService() {
+		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+		UserDetails userDetails = User.withDefaultPasswordEncoder()
+				.username("admin")
+				.password("admin123")
+				.roles("USER", "ADMIN")
+				.build();
+		
+		manager.createUser(userDetails);
+		return manager;
 	}
 	
 
